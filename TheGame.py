@@ -10,7 +10,7 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 api = Api(app)
 
 # Load the configuration file
-with open('/Users/chandrapavan1104/Desktop/HumanVsBot/config.json') as config_file:
+with open('./config.json') as config_file:
     config = json.load(config_file)
 
 STOCKFISH_PATH = config['STOCKFISH_PATH']
