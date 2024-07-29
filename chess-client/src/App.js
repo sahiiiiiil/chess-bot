@@ -33,7 +33,7 @@ const ChessBoard = () => {
 
   const startNewGame = async (color, difficulty) => {
     try {
-      const response = await axios.post('http://localhost:8080/new_game', { color, difficulty });
+      const response = await axios.post('http://18.216.178.59:8080/new_game', { color, difficulty });
       const newChess = new Chess(response.data.board_fen);
       setPosition(response.data.board_fen);
       setChess(newChess);
@@ -47,7 +47,7 @@ const ChessBoard = () => {
 
   const makeMove = async (fen, move, difficulty) => {
     try {
-      const response = await axios.post('http://localhost:8080/make_move', { fen, move, difficulty });
+      const response = await axios.post('http://18.216.178.59:8080/make_move', { fen, move, difficulty });
       chess.move(response.data.stockfish_move);
       setPosition(chess.fen());
       updateGameStatus(chess, setGameStatus);
@@ -60,13 +60,18 @@ const ChessBoard = () => {
   const onDrop = async (sourceSquare, targetSquare) => {
     let move_string = `${sourceSquare}${targetSquare}`;
     const oldPosition = position;
+    const piece = chess.get(sourceSquare);
+    if (piece && piece.color !== 'w') {
+      setErrorMessage('You can only move white pieces.');
+      return false;
+    }
     console.log(position);
     try{
 
       const promotionPiece = 'q'; // Default to queen for simplicity, you can modify this to allow user selection
-      const piece = chess.get(sourceSquare).type;
+      //const piece = chess.get(sourceSquare).type;
   
-      if (piece === 'p' && ((sourceSquare[1] === '7' && targetSquare[1] === '8') || (sourceSquare[1] === '2' && targetSquare[1] === '1'))) {
+      if (piece.type === 'p' && ((sourceSquare[1] === '7' && targetSquare[1] === '8') || (sourceSquare[1] === '2' && targetSquare[1] === '1'))) {
         move_string += promotionPiece; // Append the promotion piece to the move string
       }
 
