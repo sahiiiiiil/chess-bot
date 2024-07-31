@@ -101,17 +101,10 @@ const ChessBoard = () => {
       setErrorMessage('You can only move white pieces.');
       return false;
     }
-<<<<<<< HEAD
-=======
-    console.log(position);
->>>>>>> 328f57ba75dc3f4139c8ae41420f7ac249df9812
     try{
       const promotionPiece = 'q'; // Default to queen for simplicity, you can modify this to allow user selection
-<<<<<<< HEAD
-=======
       //const piece = chess.get(sourceSquare).type;
   
->>>>>>> 328f57ba75dc3f4139c8ae41420f7ac249df9812
       if (piece.type === 'p' && ((sourceSquare[1] === '7' && targetSquare[1] === '8') || (sourceSquare[1] === '2' && targetSquare[1] === '1'))) {
         move_string += promotionPiece; // Append the promotion piece to the move string
       }
