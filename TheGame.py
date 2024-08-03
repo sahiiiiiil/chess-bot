@@ -15,9 +15,6 @@ with open('./config.json') as config_file:
 
 STOCKFISH_PATH = config['STOCKFISH_PATH']
 
-# Path to the Stockfish engine executable
-#STOCKFISH_PATH = '/opt/homebrew/bin/stockfish'  # Updated path to Stockfish
-
 # Stockfish difficulty levels configuration
 STOCKFISH_LEVELS = {
     'easy': 1,
@@ -29,29 +26,34 @@ class ChessGame:
     def __init__(self, fen=None):
         self.stockfish = None
         try:
+            self.stockfish = Stockfish(STOCKFISH_PATH)
             if fen == 'start' or fen is None:
                 self.board = chess.Board()
             else:
                 self.board = chess.Board(fen)
-            self.stockfish = Stockfish(STOCKFISH_PATH)
+            self.stockfish.set_fen_position(self.board.fen())
         except Exception as e:
             print(f"Error initializing ChessGame: {e}")
 
     def set_difficulty(self, level):
         self.stockfish.set_skill_level(STOCKFISH_LEVELS[level])
 
+    def checkmate(self):
+        return self.board.is_checkmate()
+
     def make_move(self, move):
         try:
             self.board.push_san(move)
+            self.stockfish.set_fen_position(self.board.fen())
             return True, ""
         except Exception as e:
             return False, str(e)
 
     def get_stockfish_move(self):
         try:
-            self.stockfish.set_fen_position(self.board.fen())
             move = self.stockfish.get_best_move()
             self.board.push_san(move)
+            self.stockfish.set_fen_position(self.board.fen())
             return move
         except Exception as e:
             print(f"Error getting Stockfish move: {e}")
@@ -74,11 +76,10 @@ class MakeMove(Resource):
     def post(self):
         try:
             data = request.get_json()
-            print(data)
             fen = data['fen']
             move = data['move']
             difficulty = data['difficulty']
-            
+            best_move = ''
             game = ChessGame(fen)
             game.set_difficulty(difficulty)
             
@@ -90,13 +91,32 @@ class MakeMove(Resource):
             if not stockfish_move:
                 return {"message": "Error getting Stockfish move"}, 500
 
-            return jsonify({"stockfish_move": stockfish_move, "board_fen": game.board.fen()})
+            if not game.checkmate():
+                game.set_difficulty('hard')
+                best_move = game.get_stockfish_move()
+                if not stockfish_move:
+                    return {"message": "Error getting Stockfish move"}, 500
+
+            return jsonify({"stockfish_move": stockfish_move, "board_fen": game.board.fen(), 'best_move': best_move})
         except Exception as e:
             print(f"Error in MakeMove: {e}")
             return {"message": "Internal server error"}, 500
 
+# class SuggestMove(Resource):
+#     def post(self):
+#         try:
+#             data = request.get_json()
+#             fen = data['fen']
+#             game = ChessGame(fen)
+#             best_move = game.get_stockfish_move()
+#             return jsonify({'best_move': best_move})
+#         except Exception as e:
+#             print(f"Error in SuggestMove: {e}")
+#             return {"message": "Internal server error"}, 500
+
 api.add_resource(NewGame, '/new_game')
 api.add_resource(MakeMove, '/make_move')
+#api.add_resource(SuggestMove, '/suggest_move')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
