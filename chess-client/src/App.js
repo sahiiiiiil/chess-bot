@@ -51,7 +51,7 @@ const ChessBoard = () => {
 
   const startNewGame = async (color, difficulty) => {
     try {
-      const response = await axios.post('http://localhost:8080/new_game', { color, difficulty });
+      const response = await axios.post('http://54.148.141.217:8080/new_game', { color, difficulty });
       const newChess = new Chess(response.data.board_fen);
       setPosition(response.data.board_fen);
       setChess(newChess);
@@ -79,7 +79,7 @@ const ChessBoard = () => {
 
   const makeMove = async (fen, move, difficulty) => {
     try {
-      const response = await axios.post('http://localhost:8080/make_move', { fen, move, difficulty });
+      const response = await axios.post('http://54.148.141.217:8080/make_move', { fen, move, difficulty });
       chess.move(response.data.stockfish_move);
       console.log(response.data);
       setBestMove(response.data.best_move);
